@@ -25,7 +25,7 @@ export const loginUser = createAsyncThunk("auth/login", async (credentials, thun
 // Register Donor
 export const registerDonor = createAsyncThunk("auth/registerDonor", async (data, thunkAPI) => {
   try {
-    const response = await api.post("/auth/register-donor", data);
+    const response = await api.post("/auth/register/donor", data);
     const { token, role, name, registrationId } = response.data.data;
     localStorage.setItem("token", token);
     localStorage.setItem("user", JSON.stringify({ role, name, registrationId }));
@@ -38,7 +38,7 @@ export const registerDonor = createAsyncThunk("auth/registerDonor", async (data,
 // Register Hospital
 export const registerHospital = createAsyncThunk("auth/registerHospital", async (data, thunkAPI) => {
   try {
-    const response = await api.post("/auth/register-hospital", data);
+    const response = await api.post("/auth/register/hospital", data);
     const { token, role, name, registrationId } = response.data.data;
     localStorage.setItem("token", token);
     localStorage.setItem("user", JSON.stringify({ role, name, registrationId }));
