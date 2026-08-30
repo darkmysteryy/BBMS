@@ -34,6 +34,7 @@ const Landing = () => (
             </p>
             <div className="hero-actions">
               <Link to="/signup" className="btn btn-primary btn-lg">Donate Blood</Link>
+              <Link to="/signup" className="btn btn-secondary btn-lg">Request Blood</Link>
               <Link to="/login" className="btn btn-outline btn-lg">Hospital Login</Link>
             </div>
           </div>
