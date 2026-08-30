@@ -15,7 +15,6 @@ const donorLinks = [
   { to: "/donor/dashboard",     icon: "📊", label: "Dashboard" },
   { to: "/donor/request-blood", icon: "🩸", label: "Request Blood" },
   { to: "/donor/my-requests",   icon: "📋", label: "My Requests" },
-  { to: "/donor/profile",       icon: "👤", label: "My Profile" },
   { to: "/donor/donations",     icon: "💉", label: "Donation History" },
 ];
 
@@ -25,7 +24,6 @@ const hospitalLinks = [
   { to: "/hospital/accepted-requests", icon: "✅", label: "Accepted Requests" },
   { to: "/hospital/inventory",         icon: "🩸", label: "My Inventory" },
   { to: "/hospital/record-donation",   icon: "💉", label: "Record Donation" },
-  { to: "/hospital/profile",           icon: "🏥", label: "Profile" },
 ];
 
 const Sidebar = () => {

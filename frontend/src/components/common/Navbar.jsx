@@ -22,6 +22,12 @@ const Navbar = () => {
     : isHospital ? "/hospital/dashboard"
     : "/";
 
+  // Profile path based on role
+  const profilePath =
+    isDonor ? "/donor/profile"
+    : isHospital ? "/hospital/profile"
+    : null;
+
   return (
     <nav className="navbar">
       {/* Logo */}
@@ -41,10 +47,17 @@ const Navbar = () => {
       <div className="navbar-actions">
         {isLoggedIn ? (
           <>
-            <div className="navbar-user">
-              <div className="navbar-avatar">{avatarLetter}</div>
-              <span className="navbar-name">{user?.name}</span>
-            </div>
+            {profilePath ? (
+              <Link to={profilePath} className="navbar-user" style={{ textDecoration: "none" }}>
+                <div className="navbar-avatar">{avatarLetter}</div>
+                <span className="navbar-name">{user?.name}</span>
+              </Link>
+            ) : (
+              <div className="navbar-user">
+                <div className="navbar-avatar">{avatarLetter}</div>
+                <span className="navbar-name">{user?.name}</span>
+              </div>
+            )}
             <button className="btn btn-outline btn-sm" onClick={onLogout}>
               Logout
             </button>
