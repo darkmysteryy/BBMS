@@ -14,6 +14,7 @@ import NotFound from "../pages/NotFound";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import ManageDonors from "../pages/admin/ManageDonors";
 import ManageHospitals from "../pages/admin/ManageHospitals";
+import Inventory from "../pages/Inventory";
 
 // Donor Pages
 import DonorDashboard from "../pages/donor/DonorDashboard";
@@ -44,6 +45,7 @@ const AppRouter = () => {
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/donors"    element={<ManageDonors />} />
         <Route path="/admin/hospitals" element={<ManageHospitals />} />
+        <Route path="/admin/inventory" element={<Inventory />} />
       </Route>
 
       {/* Donor Routes */}

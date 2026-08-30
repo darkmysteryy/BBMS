@@ -40,7 +40,8 @@ const Navbar = () => {
         <Link to="/">Home</Link>
         <Link to="/about">About</Link>
         {isLoggedIn && <Link to={dashboardPath}>Dashboard</Link>}
-        {(isAdmin || isLoggedIn) && <Link to="/inventory">Inventory</Link>}
+        {isAdmin && <Link to="/admin/inventory">Inventory</Link>}
+        {isHospital && <Link to="/hospital/inventory">Inventory</Link>}
       </div>
 
       {/* Auth Actions */}

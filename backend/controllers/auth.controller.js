@@ -146,8 +146,10 @@ const login = async (req, res, next) => {
       throw error;
     }
 
-    // Find user by email
-    const user = await User.findOne({ email });
+    // Find user by email (case-insensitive and trimmed)
+    const user = await User.findOne({ 
+      email: new RegExp("^" + email.trim() + "$", "i") 
+    });
     if (!user) {
       const error = new Error("No account found with this email.");
       error.statusCode = 404;
