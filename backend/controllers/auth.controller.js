@@ -77,9 +77,9 @@ const registerDonor = async (req, res, next) => {
 // ─── Register Hospital ─────────────────────────────────────────────────────────
 const registerHospital = async (req, res, next) => {
   try {
-    const { hospitalName, registrationNumber, email, password, phone, address, contactPerson } = req.body;
+    const { hospitalName, email, password, phone, address, contactPerson } = req.body;
 
-    if (!hospitalName || !registrationNumber || !email || !password || !phone || !address || !contactPerson) {
+    if (!hospitalName || !email || !password || !phone || !address || !contactPerson) {
       const error = new Error("All fields are required.");
       error.statusCode = 400;
       throw error;
@@ -88,13 +88,6 @@ const registerHospital = async (req, res, next) => {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       const error = new Error("Email is already registered.");
-      error.statusCode = 400;
-      throw error;
-    }
-
-    const existingHospital = await Hospital.findOne({ registrationNumber });
-    if (existingHospital) {
-      const error = new Error("This registration number is already used.");
       error.statusCode = 400;
       throw error;
     }
@@ -119,9 +112,11 @@ const registerHospital = async (req, res, next) => {
       registrationId,
     });
 
+    const autoRegistrationNumber = `REG-${registrationId}`;
+
     await Hospital.create({
       userId: user._id,
-      registrationNumber,
+      registrationNumber: autoRegistrationNumber,
       hospitalName,
       address,
       contactPerson,

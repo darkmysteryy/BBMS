@@ -28,7 +28,7 @@ const Signup = () => {
   });
 
   const [hospitalForm, setHospitalForm] = useState({
-    hospitalName: "", registrationNumber: "", email: "",
+    hospitalName: "", email: "",
     password: "", phone: "", address: "", contactPerson: "",
   });
 
@@ -156,15 +156,9 @@ const Signup = () => {
           {/* ── Hospital Form ── */}
           {tab === "hospital" && (
             <>
-              <div className="form-row">
-                <div className="form-group">
-                  <label className="form-label">Hospital Name</label>
-                  <input type="text" name="hospitalName" className="form-input" placeholder="City Hospital" value={hospitalForm.hospitalName} onChange={handleHospitalChange} required />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Reg. Number</label>
-                  <input type="text" name="registrationNumber" className="form-input" placeholder="REG12345" value={hospitalForm.registrationNumber} onChange={handleHospitalChange} required />
-                </div>
+              <div className="form-group">
+                <label className="form-label">Hospital Name</label>
+                <input type="text" name="hospitalName" className="form-input" placeholder="City Hospital" value={hospitalForm.hospitalName} onChange={handleHospitalChange} required />
               </div>
               <div className="form-group">
                 <label className="form-label">Email Address</label>
