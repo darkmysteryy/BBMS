@@ -1,5 +1,5 @@
 // models/Donation.js
-// Records each blood donation made by a donor
+// Records each blood donation made by a donor at a hospital
 
 const mongoose = require("mongoose");
 
@@ -9,6 +9,13 @@ const donationSchema = new mongoose.Schema(
     donor: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+      required: true,
+    },
+
+    // At which hospital did the donation happen?
+    hospital: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Hospital",
       required: true,
     },
 
@@ -33,7 +40,7 @@ const donationSchema = new mongoose.Schema(
       default: Date.now,
     },
 
-    // Where did the donation take place?
+    // Location/ward in the hospital
     location: {
       type: String,
       default: "Blood Bank Center",

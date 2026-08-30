@@ -1,22 +1,37 @@
 // models/BloodRequest.js
-// A request made by a hospital to get blood from the blood bank
+// A PUBLIC blood request posted by a donor — visible to ALL approved hospitals.
+// Only ONE hospital can accept it (first-come-first-served, atomic).
 
 const mongoose = require("mongoose");
 
 const bloodRequestSchema = new mongoose.Schema(
   {
-    // Unique readable ID like "REQ-AP-1700000000000"
+    // Auto-generated unique readable ID
     requestId: {
       type: String,
       required: true,
       unique: true,
     },
 
-    // Which hospital made this request?
-    hospital: {
+    // The donor/patient who needs blood
+    donor: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+
+    // NOT set at creation — filled only when a hospital accepts the request
+    // This is how we enforce "only one hospital" — it's null until claimed
+    acceptedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Hospital",
-      required: true,
+      default: null,
+    },
+
+    // When did a hospital accept this request?
+    acceptedAt: {
+      type: Date,
+      default: null,
     },
 
     bloodGroup: {
@@ -25,50 +40,53 @@ const bloodRequestSchema = new mongoose.Schema(
       required: true,
     },
 
-    // How many units are needed?
     quantity: {
       type: Number,
       required: true,
       min: 1,
     },
 
-    // How urgent is this request?
     urgency: {
       type: String,
       enum: ["Normal", "Urgent", "Critical"],
       default: "Normal",
     },
 
-    // By when does the hospital need the blood?
+    // When does the patient need the blood by?
     requiredDate: {
       type: Date,
       required: true,
     },
 
-    // Current status in the lifecycle
-    status: {
+    // Name of the patient who needs blood
+    patientName: {
       type: String,
-      enum: ["Submitted", "Approved", "Rejected", "Dispatched"],
-      default: "Submitted",
+      required: true,
+      trim: true,
     },
 
-    // Any notes from the hospital
+    // Donor's city/area — helps hospitals decide if they are nearby
+    location: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    // Any notes from the donor
     notes: {
       type: String,
       default: "",
     },
 
-    // Which admin approved or rejected this request?
-    approvedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
-
-    // When was the blood dispatched?
-    dispatchDate: {
-      type: Date,
-      default: null,
+    // Status lifecycle:
+    // Open     → visible to all hospitals, can be accepted
+    // Accepted → claimed by one hospital, locked for others
+    // Fulfilled→ hospital has provided the blood
+    // Cancelled→ donor cancelled the request (only possible while Open)
+    status: {
+      type: String,
+      enum: ["Open", "Accepted", "Fulfilled", "Cancelled"],
+      default: "Open",
     },
   },
   {

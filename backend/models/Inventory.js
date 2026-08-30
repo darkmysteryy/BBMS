@@ -1,10 +1,17 @@
 // models/Inventory.js
-// Tracks blood units available in the blood bank
+// Tracks blood units in a specific hospital's inventory
 
 const mongoose = require("mongoose");
 
 const inventorySchema = new mongoose.Schema(
   {
+    // Which hospital owns this blood stock?
+    hospital: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Hospital",
+      required: true,
+    },
+
     bloodGroup: {
       type: String,
       enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],

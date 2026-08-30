@@ -1,15 +1,13 @@
 // routes/inventory.route.js
 const express = require("express");
 const router = express.Router();
-const { getAllInventory, addInventory, updateInventory, deleteInventory } = require("../controllers/inventory.controller");
+const { getHospitalInventory, getPublicInventorySummary } = require("../controllers/inventory.controller");
 const { verifyToken, authorizeRoles } = require("../middleware/auth.middleware");
 
-// Anyone logged in can view inventory
-router.get("/", verifyToken, getAllInventory);
+// Public — anyone (including unauthenticated) can see overall blood availability
+router.get("/public", getPublicInventorySummary);
 
-// Only admin can add, update, or delete inventory
-router.post("/", verifyToken, authorizeRoles("admin"), addInventory);
-router.put("/:id", verifyToken, authorizeRoles("admin"), updateInventory);
-router.delete("/:id", verifyToken, authorizeRoles("admin"), deleteInventory);
+// Hospital sees and manages its own inventory
+router.get("/", verifyToken, authorizeRoles("hospital"), getHospitalInventory);
 
 module.exports = router;

@@ -1,13 +1,11 @@
 // redux/store.js
-// Central Redux store — combines all slices
-
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./slices/authSlice";
 import donorReducer from "./slices/donorSlice";
 import hospitalReducer from "./slices/hospitalSlice";
 import inventoryReducer from "./slices/inventorySlice";
 import requestReducer from "./slices/requestSlice";
-import reportReducer from "./slices/reportSlice";
+import hospitalInventoryReducer from "./slices/hospitalInventorySlice";
 
 const store = configureStore({
   reducer: {
@@ -16,7 +14,7 @@ const store = configureStore({
     hospital: hospitalReducer,
     inventory: inventoryReducer,
     requests: requestReducer,
-    reports: reportReducer,
+    hospitalInventory: hospitalInventoryReducer,
   },
 });
 

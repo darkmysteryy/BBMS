@@ -7,24 +7,25 @@ import useAuth from "../../hooks/useAuth";
 // Links for each role
 const adminLinks = [
   { to: "/admin/dashboard",  icon: "📊", label: "Dashboard" },
-  { to: "/admin/donors",     icon: "👤", label: "Donors" },
   { to: "/admin/hospitals",  icon: "🏥", label: "Hospitals" },
-  { to: "/admin/inventory",  icon: "🩸", label: "Inventory" },
-  { to: "/admin/requests",   icon: "📋", label: "Requests" },
-  { to: "/admin/reports",    icon: "📈", label: "Reports" },
+  { to: "/admin/donors",     icon: "👤", label: "Donors" },
 ];
 
 const donorLinks = [
-  { to: "/donor/dashboard",  icon: "📊", label: "Dashboard" },
-  { to: "/donor/profile",    icon: "👤", label: "My Profile" },
-  { to: "/donor/donations",  icon: "🩸", label: "Donations" },
+  { to: "/donor/dashboard",     icon: "📊", label: "Dashboard" },
+  { to: "/donor/request-blood", icon: "🩸", label: "Request Blood" },
+  { to: "/donor/my-requests",   icon: "📋", label: "My Requests" },
+  { to: "/donor/profile",       icon: "👤", label: "My Profile" },
+  { to: "/donor/donations",     icon: "💉", label: "Donation History" },
 ];
 
 const hospitalLinks = [
-  { to: "/hospital/dashboard", icon: "📊", label: "Dashboard" },
-  { to: "/hospital/profile",   icon: "🏥", label: "Profile" },
-  { to: "/hospital/request",   icon: "➕", label: "Request Blood" },
-  { to: "/hospital/requests",  icon: "📋", label: "My Requests" },
+  { to: "/hospital/dashboard",         icon: "📊", label: "Dashboard" },
+  { to: "/hospital/open-requests",     icon: "📋", label: "Open Requests" },
+  { to: "/hospital/accepted-requests", icon: "✅", label: "Accepted Requests" },
+  { to: "/hospital/inventory",         icon: "🩸", label: "My Inventory" },
+  { to: "/hospital/record-donation",   icon: "💉", label: "Record Donation" },
+  { to: "/hospital/profile",           icon: "🏥", label: "Profile" },
 ];
 
 const Sidebar = () => {
@@ -48,13 +49,6 @@ const Sidebar = () => {
           {link.label}
         </NavLink>
       ))}
-
-      <hr className="sidebar-divider" />
-
-      <NavLink to="/inventory" className={({ isActive }) => `sidebar-link ${isActive ? "active" : ""}`}>
-        <span className="sidebar-icon">📦</span>
-        Blood Inventory
-      </NavLink>
     </aside>
   );
 };

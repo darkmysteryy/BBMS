@@ -1,12 +1,9 @@
 // controllers/admin.controller.js
-// Admin-only actions: dashboard stats, manage users, approve hospitals
+// Admin-only actions: approve hospital accounts and manage users
 
 const User = require("../models/User");
 const DonorProfile = require("../models/DonorProfile");
 const Hospital = require("../models/Hospital");
-const Inventory = require("../models/Inventory");
-const BloodRequest = require("../models/BloodRequest");
-const Donation = require("../models/Donation");
 const bcrypt = require("bcrypt");
 const { sendSuccess } = require("../utils/apiResponse");
 
@@ -16,28 +13,11 @@ const ROLES = {
   HOSPITAL: "hospital",
 };
 
-const HOSPITAL_VERIFICATION_STATUS = {
-  PENDING: "pending",
-  APPROVED: "approved",
-  REJECTED: "rejected",
-};
-
-const BLOOD_REQUEST_STATUS = {
-  SUBMITTED: "Submitted",
-  APPROVED: "Approved",
-  REJECTED: "Rejected",
-  DISPATCHED: "Dispatched",
-};
-
-const LOW_STOCK_THRESHOLD = 10;
-
-
 // ─── Seed Admin (one-time setup) ──────────────────────────────────────────────
 const seedAdmin = async (req, res, next) => {
   try {
     const { name, email, password, phone, seedKey } = req.body;
 
-    // Verify the secret seed key from environment variables
     if (seedKey !== process.env.ADMIN_SEED_KEY) {
       const error = new Error("Invalid seed key.");
       error.statusCode = 403;
@@ -68,45 +48,21 @@ const seedAdmin = async (req, res, next) => {
 };
 
 // ─── Dashboard Stats ───────────────────────────────────────────────────────────
+// Simple stats — admin only cares about account management
 const getDashboardStats = async (req, res, next) => {
   try {
     const totalDonors = await User.countDocuments({ role: ROLES.DONOR });
     const totalHospitals = await User.countDocuments({ role: ROLES.HOSPITAL });
 
-    // Total available blood units
-    const inventoryData = await Inventory.aggregate([
-      { $match: { status: "available" } },
-      { $group: { _id: null, totalUnits: { $sum: "$units" } } },
-    ]);
-    const totalBloodUnits = inventoryData[0]?.totalUnits || 0;
-
-    // Pending blood requests
-    const pendingRequests = await BloodRequest.countDocuments({
-      status: BLOOD_REQUEST_STATUS.SUBMITTED,
-    });
-
-    // Low stock alerts (blood groups with units < threshold)
-    const lowStockItems = await Inventory.find({
-      status: "available",
-      units: { $lt: LOW_STOCK_THRESHOLD },
-    });
-
-    // Donations this month
-    const startOfMonth = new Date();
-    startOfMonth.setDate(1);
-    startOfMonth.setHours(0, 0, 0, 0);
-
-    const donationsThisMonth = await Donation.countDocuments({
-      donationDate: { $gte: startOfMonth },
-    });
+    // How many hospitals are still waiting for approval?
+    const pendingHospitals = await Hospital.countDocuments({ verificationStatus: "pending" });
+    const approvedHospitals = await Hospital.countDocuments({ verificationStatus: "approved" });
 
     sendSuccess(res, 200, "Dashboard stats fetched.", {
       totalDonors,
       totalHospitals,
-      totalBloodUnits,
-      pendingRequests,
-      lowStockAlerts: lowStockItems.length,
-      donationsThisMonth,
+      pendingHospitals,
+      approvedHospitals,
     });
   } catch (error) {
     next(error);
@@ -130,7 +86,6 @@ const getAllDonors = async (req, res, next) => {
       .select("-password")
       .sort({ createdAt: -1 });
 
-    // Attach donor profiles
     const donorsWithProfile = await Promise.all(
       donors.map(async (donor) => {
         const profile = await DonorProfile.findOne({ userId: donor._id });
@@ -166,7 +121,6 @@ const getAllHospitals = async (req, res, next) => {
       })
     );
 
-    // Filter by verification status if provided
     let result = hospitalsWithProfile;
     if (verificationStatus) {
       result = hospitalsWithProfile.filter(
@@ -180,10 +134,11 @@ const getAllHospitals = async (req, res, next) => {
   }
 };
 
-// ─── Verify or Reject Hospital ─────────────────────────────────────────────────
+// ─── Verify or Reject Hospital Account ────────────────────────────────────────
+// This is the core admin function — approving hospital registrations
 const updateHospitalVerification = async (req, res, next) => {
   try {
-    const { id } = req.params; // Hospital profile ID
+    const { id } = req.params;
     const { verificationStatus } = req.body;
 
     if (!verificationStatus) {
@@ -216,14 +171,12 @@ const toggleUserActive = async (req, res, next) => {
     const { id } = req.params;
 
     const user = await User.findById(id).select("-password");
-
     if (!user) {
       const error = new Error("User not found.");
       error.statusCode = 404;
       throw error;
     }
 
-    // Flip the isActive status
     user.isActive = !user.isActive;
     await user.save();
 
@@ -238,6 +191,20 @@ const toggleUserActive = async (req, res, next) => {
   }
 };
 
+// ─── Get Public List of Approved Hospitals (for donors) ───────────────────────
+// No auth required — donors need to see which hospitals are available
+const getApprovedHospitals = async (req, res, next) => {
+  try {
+    const hospitals = await Hospital.find({ verificationStatus: "approved" })
+      .select("hospitalName address contactPerson")
+      .sort({ hospitalName: 1 });
+
+    sendSuccess(res, 200, "Approved hospitals fetched.", hospitals);
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   seedAdmin,
   getDashboardStats,
@@ -245,4 +212,5 @@ module.exports = {
   getAllHospitals,
   updateHospitalVerification,
   toggleUserActive,
+  getApprovedHospitals,
 };

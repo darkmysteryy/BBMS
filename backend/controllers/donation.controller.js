@@ -1,19 +1,17 @@
 // controllers/donation.controller.js
-// Records a blood donation and updates inventory + donor eligibility
+// Hospital records walk-in donor donations — adds blood to hospital's own inventory
 
 const Donation = require("../models/Donation");
 const DonorProfile = require("../models/DonorProfile");
 const Inventory = require("../models/Inventory");
+const Hospital = require("../models/Hospital");
 const { sendSuccess } = require("../utils/apiResponse");
 
 const DONOR_ELIGIBILITY_DAYS = 56;
-const INVENTORY_STATUS = {
-  AVAILABLE: "available",
-  EXPIRED: "expired",
-  USED: "used",
-};
 
-// ─── Record a Donation (Admin) ─────────────────────────────────────────────────
+// ─── Record a Donation (Hospital) ──────────────────────────────────────────────
+// Hospital staff records a walk-in donor donation
+// Blood units are added to THIS hospital's inventory
 const createDonation = async (req, res, next) => {
   try {
     const { donorUserId, bloodGroup, quantity, collectionDate, location } = req.body;
@@ -21,6 +19,14 @@ const createDonation = async (req, res, next) => {
     if (!donorUserId || !bloodGroup || !quantity || !collectionDate) {
       const error = new Error("donorUserId, bloodGroup, quantity, and collectionDate are required.");
       error.statusCode = 400;
+      throw error;
+    }
+
+    // Find the hospital profile of the logged-in hospital user
+    const hospital = await Hospital.findOne({ userId: req.user._id });
+    if (!hospital) {
+      const error = new Error("Hospital profile not found.");
+      error.statusCode = 404;
       throw error;
     }
 
@@ -41,27 +47,29 @@ const createDonation = async (req, res, next) => {
       throw error;
     }
 
-    // Create or update inventory for this blood group
     // Calculate expiry: blood is typically valid for 42 days from collection
     const expiryDate = new Date(collectionDate);
     expiryDate.setDate(expiryDate.getDate() + 42);
 
+    // Add the donated blood to THIS hospital's inventory
     const inventoryItem = await Inventory.create({
+      hospital: hospital._id,
       bloodGroup,
       units: quantity,
       collectionDate,
       expiryDate,
       donor: donorUserId,
-      status: INVENTORY_STATUS.AVAILABLE,
+      status: "available",
     });
 
     // Record the donation
     const donation = await Donation.create({
       donor: donorUserId,
+      hospital: hospital._id,
       inventory: inventoryItem._id,
       quantity,
       donationDate: collectionDate,
-      location,
+      location: location || hospital.hospitalName,
     });
 
     // Update donor profile: set last donation date and calculate next eligible date
@@ -70,27 +78,31 @@ const createDonation = async (req, res, next) => {
 
     await DonorProfile.findOneAndUpdate(
       { userId: donorUserId },
-      {
-        lastDonationDate: collectionDate,
-        eligibleAfter,
-      }
+      { lastDonationDate: collectionDate, eligibleAfter }
     );
 
-    sendSuccess(res, 201, "Donation recorded and inventory updated.", donation);
+    sendSuccess(res, 201, "Donation recorded and added to hospital inventory.", donation);
   } catch (error) {
     next(error);
   }
 };
 
-// ─── Get All Donations (Admin) ─────────────────────────────────────────────────
-const getAllDonations = async (req, res, next) => {
+// ─── Get All Donations at This Hospital ───────────────────────────────────────
+const getHospitalDonations = async (req, res, next) => {
   try {
-    const donations = await Donation.find()
+    const hospital = await Hospital.findOne({ userId: req.user._id });
+    if (!hospital) {
+      const error = new Error("Hospital profile not found.");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    const donations = await Donation.find({ hospital: hospital._id })
       .populate("donor", "name email")
       .populate("inventory", "bloodGroup units")
       .sort({ donationDate: -1 });
 
-    sendSuccess(res, 200, "Donations fetched.", donations);
+    sendSuccess(res, 200, "Hospital donations fetched.", donations);
   } catch (error) {
     next(error);
   }
@@ -100,6 +112,7 @@ const getAllDonations = async (req, res, next) => {
 const getMyDonations = async (req, res, next) => {
   try {
     const donations = await Donation.find({ donor: req.user._id })
+      .populate("hospital", "hospitalName address")
       .populate("inventory", "bloodGroup units")
       .sort({ donationDate: -1 });
 
@@ -109,4 +122,4 @@ const getMyDonations = async (req, res, next) => {
   }
 };
 
-module.exports = { createDonation, getAllDonations, getMyDonations };
+module.exports = { createDonation, getHospitalDonations, getMyDonations };

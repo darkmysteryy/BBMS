@@ -3,31 +3,32 @@
 import { Routes, Route } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
 
-// Pages
+// Public Pages
 import Landing from "../pages/Landing";
 import About from "../pages/About";
 import Login from "../pages/Login";
 import Signup from "../pages/Signup";
-import Inventory from "../pages/Inventory";
 import NotFound from "../pages/NotFound";
 
 // Admin Pages
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import ManageDonors from "../pages/admin/ManageDonors";
 import ManageHospitals from "../pages/admin/ManageHospitals";
-import ManageRequests from "../pages/admin/ManageRequests";
-import Reports from "../pages/admin/Reports";
 
 // Donor Pages
 import DonorDashboard from "../pages/donor/DonorDashboard";
 import DonorProfile from "../pages/donor/DonorProfile";
 import DonationHistory from "../pages/donor/DonationHistory";
+import PostBloodRequest from "../pages/donor/PostBloodRequest";
+import MyRequests from "../pages/donor/MyRequests";
 
 // Hospital Pages
 import HospitalDashboard from "../pages/hospital/HospitalDashboard";
 import HospitalProfile from "../pages/hospital/HospitalProfile";
-import RequestBlood from "../pages/hospital/RequestBlood";
-import RequestHistory from "../pages/hospital/RequestHistory";
+import OpenRequests from "../pages/hospital/OpenRequests";
+import MyAcceptedRequests from "../pages/hospital/MyAcceptedRequests";
+import ManageInventory from "../pages/hospital/ManageInventory";
+import RecordDonation from "../pages/hospital/RecordDonation";
 
 const AppRouter = () => {
   return (
@@ -38,37 +39,33 @@ const AppRouter = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
 
-      {/* Shared Protected Route */}
-      <Route element={<ProtectedRoute />}>
-        <Route path="/inventory" element={<Inventory />} />
-      </Route>
-
       {/* Admin Routes */}
       <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        <Route path="/admin/donors" element={<ManageDonors />} />
+        <Route path="/admin/donors"    element={<ManageDonors />} />
         <Route path="/admin/hospitals" element={<ManageHospitals />} />
-        <Route path="/admin/inventory" element={<Inventory />} />
-        <Route path="/admin/requests" element={<ManageRequests />} />
-        <Route path="/admin/reports" element={<Reports />} />
       </Route>
 
       {/* Donor Routes */}
       <Route element={<ProtectedRoute allowedRoles={["donor"]} />}>
-        <Route path="/donor/dashboard" element={<DonorDashboard />} />
-        <Route path="/donor/profile" element={<DonorProfile />} />
-        <Route path="/donor/donations" element={<DonationHistory />} />
+        <Route path="/donor/dashboard"     element={<DonorDashboard />} />
+        <Route path="/donor/profile"       element={<DonorProfile />} />
+        <Route path="/donor/donations"     element={<DonationHistory />} />
+        <Route path="/donor/request-blood" element={<PostBloodRequest />} />
+        <Route path="/donor/my-requests"   element={<MyRequests />} />
       </Route>
 
       {/* Hospital Routes */}
       <Route element={<ProtectedRoute allowedRoles={["hospital"]} />}>
-        <Route path="/hospital/dashboard" element={<HospitalDashboard />} />
-        <Route path="/hospital/profile" element={<HospitalProfile />} />
-        <Route path="/hospital/request" element={<RequestBlood />} />
-        <Route path="/hospital/requests" element={<RequestHistory />} />
+        <Route path="/hospital/dashboard"         element={<HospitalDashboard />} />
+        <Route path="/hospital/profile"           element={<HospitalProfile />} />
+        <Route path="/hospital/open-requests"     element={<OpenRequests />} />
+        <Route path="/hospital/accepted-requests" element={<MyAcceptedRequests />} />
+        <Route path="/hospital/inventory"         element={<ManageInventory />} />
+        <Route path="/hospital/record-donation"   element={<RecordDonation />} />
       </Route>
 
-      {/* 404 Route */}
+      {/* 404 */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

@@ -8,11 +8,15 @@ const {
   getAllHospitals,
   updateHospitalVerification,
   toggleUserActive,
+  getApprovedHospitals,
 } = require("../controllers/admin.controller");
 const { verifyToken, authorizeRoles } = require("../middleware/auth.middleware");
 
-// Seed route is public (protected only by the seed key)
+// Seed route — public, protected only by seed key
 router.post("/seed", seedAdmin);
+
+// Public — donors use this to see which hospitals are available
+router.get("/hospitals/approved", getApprovedHospitals);
 
 // All other admin routes require login and admin role
 router.use(verifyToken, authorizeRoles("admin"));

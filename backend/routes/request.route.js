@@ -1,15 +1,43 @@
 // routes/request.route.js
 const express = require("express");
 const router = express.Router();
-const { createRequest, getAllRequests, getRequestById, updateRequestStatus } = require("../controllers/request.controller");
+const {
+  createRequest,
+  getOpenRequests,
+  getMyRequests,
+  getMyAcceptedRequests,
+  acceptRequest,
+  fulfilRequest,
+  cancelRequest,
+  getRequestById,
+} = require("../controllers/request.controller");
 const { verifyToken, authorizeRoles } = require("../middleware/auth.middleware");
 
-// Hospital creates a request; Admin and Hospital can view
-router.post("/", verifyToken, authorizeRoles("hospital"), createRequest);
-router.get("/", verifyToken, authorizeRoles("admin", "hospital"), getAllRequests);
-router.get("/:id", verifyToken, authorizeRoles("admin", "hospital"), getRequestById);
+// ── Donor Routes ───────────────────────────────────────────────────────────────
+// Donor posts a public blood request
+router.post("/", verifyToken, authorizeRoles("donor"), createRequest);
 
-// Only admin can update request status (approve/reject/dispatch)
-router.put("/:id/status", verifyToken, authorizeRoles("admin"), updateRequestStatus);
+// Donor sees their own requests
+router.get("/my", verifyToken, authorizeRoles("donor"), getMyRequests);
+
+// Donor cancels their own Open request
+router.put("/:id/cancel", verifyToken, authorizeRoles("donor"), cancelRequest);
+
+// ── Hospital Routes ────────────────────────────────────────────────────────────
+// Hospital sees all Open public requests (the broadcast feed)
+router.get("/open", verifyToken, authorizeRoles("hospital"), getOpenRequests);
+
+// Hospital sees requests it has accepted
+router.get("/accepted", verifyToken, authorizeRoles("hospital"), getMyAcceptedRequests);
+
+// Hospital accepts an Open request (atomic — only first hospital wins)
+router.put("/:id/accept", verifyToken, authorizeRoles("hospital"), acceptRequest);
+
+// Hospital fulfils an accepted request (deducts from inventory)
+router.put("/:id/fulfil", verifyToken, authorizeRoles("hospital"), fulfilRequest);
+
+// ── Shared ─────────────────────────────────────────────────────────────────────
+// Any logged-in user can get a single request by ID
+router.get("/:id", verifyToken, getRequestById);
 
 module.exports = router;
