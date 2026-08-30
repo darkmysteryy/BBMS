@@ -5,6 +5,7 @@ const User = require("../models/User");
 const DonorProfile = require("../models/DonorProfile");
 const Hospital = require("../models/Hospital");
 const bcrypt = require("bcrypt");
+const generateRegId = require("../utils/generateRegId");
 const { sendSuccess } = require("../utils/apiResponse");
 
 const ROLES = {
@@ -33,15 +34,25 @@ const seedAdmin = async (req, res, next) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Generate unique Registration ID for admin
+    let uniqueIdFound = false;
+    let registrationId;
+    while (!uniqueIdFound) {
+      registrationId = generateRegId();
+      const existing = await User.findOne({ registrationId });
+      if (!existing) uniqueIdFound = true;
+    }
+
     const admin = await User.create({
       name,
       email,
       password: hashedPassword,
       phone,
       role: ROLES.ADMIN,
+      registrationId,
     });
 
-    sendSuccess(res, 201, "Admin created successfully.", { name: admin.name, email: admin.email });
+    sendSuccess(res, 201, "Admin created successfully.", { name: admin.name, email: admin.email, registrationId });
   } catch (error) {
     next(error);
   }
