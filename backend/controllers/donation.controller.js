@@ -3,6 +3,7 @@
 
 const Donation = require("../models/Donation");
 const DonorProfile = require("../models/DonorProfile");
+const User = require("../models/User");
 const Inventory = require("../models/Inventory");
 const Hospital = require("../models/Hospital");
 const { sendSuccess } = require("../utils/apiResponse");
@@ -14,10 +15,10 @@ const DONOR_ELIGIBILITY_DAYS = 56;
 // Blood units are added to THIS hospital's inventory
 const createDonation = async (req, res, next) => {
   try {
-    const { donorUserId, bloodGroup, quantity, collectionDate, location } = req.body;
+    const { donorRegId, bloodGroup, quantity, collectionDate, location } = req.body;
 
-    if (!donorUserId || !bloodGroup || !quantity || !collectionDate) {
-      const error = new Error("donorUserId, bloodGroup, quantity, and collectionDate are required.");
+    if (!donorRegId || !bloodGroup || !quantity || !collectionDate) {
+      const error = new Error("donorRegId, bloodGroup, quantity, and collectionDate are required.");
       error.statusCode = 400;
       throw error;
     }
@@ -30,10 +31,18 @@ const createDonation = async (req, res, next) => {
       throw error;
     }
 
-    // Find donor profile
-    const donorProfile = await DonorProfile.findOne({ userId: donorUserId });
+    // Find the User account using the 8-digit Registration ID
+    const donorUser = await User.findOne({ registrationId: donorRegId, role: "donor" });
+    if (!donorUser) {
+      const error = new Error("No donor found with this Registration ID.");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    // Find donor profile using the found User ID
+    const donorProfile = await DonorProfile.findOne({ userId: donorUser._id });
     if (!donorProfile) {
-      const error = new Error("Donor profile not found.");
+      const error = new Error("Donor profile data is incomplete.");
       error.statusCode = 404;
       throw error;
     }
@@ -58,13 +67,13 @@ const createDonation = async (req, res, next) => {
       units: quantity,
       collectionDate,
       expiryDate,
-      donor: donorUserId,
+      donor: donorUser._id,
       status: "available",
     });
 
     // Record the donation
     const donation = await Donation.create({
-      donor: donorUserId,
+      donor: donorUser._id,
       hospital: hospital._id,
       inventory: inventoryItem._id,
       quantity,
@@ -77,7 +86,7 @@ const createDonation = async (req, res, next) => {
     eligibleAfter.setDate(eligibleAfter.getDate() + DONOR_ELIGIBILITY_DAYS);
 
     await DonorProfile.findOneAndUpdate(
-      { userId: donorUserId },
+      { userId: donorUser._id },
       { lastDonationDate: collectionDate, eligibleAfter }
     );
 

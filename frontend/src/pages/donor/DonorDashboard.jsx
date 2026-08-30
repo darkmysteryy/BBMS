@@ -48,9 +48,9 @@ const DonorDashboard = () => {
       </div>
 
       <div className="stats-grid">
+        <StatCard icon="🆔" label="Registration ID" value={authUser?.registrationId || "\u2014"}      colorClass="stat-icon-blue" />
         <StatCard icon="🩸" label="Blood Group"     value={profile?.bloodGroup || "\u2014"}         colorClass="stat-icon-red" />
         <StatCard icon="📋" label="Open Requests"   value={openCount}                             colorClass="stat-icon-blue" />
-        <StatCard icon="⏳" label="Accepted"        value={acceptedCount}                         colorClass="stat-icon-yellow" />
         <StatCard icon="✅" label="Fulfilled"       value={fulfilledCount}                        colorClass="stat-icon-green" />
       </div>
 

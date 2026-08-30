@@ -6,6 +6,7 @@ const User = require("../models/User");
 const DonorProfile = require("../models/DonorProfile");
 const Hospital = require("../models/Hospital");
 const generateToken = require("../utils/generateToken");
+const generateRegId = require("../utils/generateRegId");
 const { sendSuccess } = require("../utils/apiResponse");
 
 const ROLES = {
@@ -37,6 +38,15 @@ const registerDonor = async (req, res, next) => {
     // Hash the password before saving
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Generate unique Registration ID
+    let uniqueIdFound = false;
+    let registrationId;
+    while (!uniqueIdFound) {
+      registrationId = generateRegId();
+      const existing = await User.findOne({ registrationId });
+      if (!existing) uniqueIdFound = true;
+    }
+
     // Create the User account
     const user = await User.create({
       name,
@@ -44,6 +54,7 @@ const registerDonor = async (req, res, next) => {
       password: hashedPassword,
       phone,
       role: ROLES.DONOR,
+      registrationId,
     });
 
     // Create the Donor Profile with extra donor details
@@ -57,7 +68,7 @@ const registerDonor = async (req, res, next) => {
 
     const token = generateToken(user);
 
-    sendSuccess(res, 201, "Donor registered successfully.", { token, role: user.role, name: user.name });
+    sendSuccess(res, 201, "Donor registered successfully.", { token, role: user.role, name: user.name, registrationId: user.registrationId });
   } catch (error) {
     next(error);
   }
@@ -90,12 +101,22 @@ const registerHospital = async (req, res, next) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Generate unique Registration ID
+    let uniqueIdFound = false;
+    let registrationId;
+    while (!uniqueIdFound) {
+      registrationId = generateRegId();
+      const existing = await User.findOne({ registrationId });
+      if (!existing) uniqueIdFound = true;
+    }
+
     const user = await User.create({
       name: hospitalName,
       email,
       password: hashedPassword,
       phone,
       role: ROLES.HOSPITAL,
+      registrationId,
     });
 
     await Hospital.create({
@@ -112,6 +133,7 @@ const registerHospital = async (req, res, next) => {
       token,
       role: user.role,
       name: user.name,
+      registrationId: user.registrationId,
     });
   } catch (error) {
     next(error);
@@ -159,6 +181,7 @@ const login = async (req, res, next) => {
       role: user.role,
       name: user.name,
       id: user._id,
+      registrationId: user.registrationId,
     });
   } catch (error) {
     next(error);

@@ -12,6 +12,13 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
 
+    // 8-Digit unique registration ID for this user
+    registrationId: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+
     // Full name (for donors) or hospital name (for hospitals)
     name: {
       type: String,

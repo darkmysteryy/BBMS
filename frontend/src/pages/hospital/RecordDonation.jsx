@@ -13,7 +13,7 @@ const RecordDonation = () => {
   const { loading, error, successMessage } = useSelector((state) => state.hospitalInventory);
 
   const [form, setForm] = useState({
-    donorUserId: "",
+    donorRegId: "",
     bloodGroup: "",
     quantity: 1,
     collectionDate: new Date().toISOString().split("T")[0],
@@ -27,7 +27,7 @@ const RecordDonation = () => {
     dispatch(clearHospitalInventoryError());
     const result = await dispatch(recordDonation(form));
     if (recordDonation.fulfilled.match(result)) {
-      setForm({ donorUserId: "", bloodGroup: "", quantity: 1, collectionDate: new Date().toISOString().split("T")[0], location: "" });
+      setForm({ donorRegId: "", bloodGroup: "", quantity: 1, collectionDate: new Date().toISOString().split("T")[0], location: "" });
       setTimeout(() => dispatch(clearHospitalInventorySuccess()), 3000);
     }
   };
@@ -45,11 +45,11 @@ const RecordDonation = () => {
 
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <div className="form-group">
-            <label className="form-label">Donor User ID *</label>
-            <input className="form-input" name="donorUserId" value={form.donorUserId}
-              onChange={handleChange} placeholder="Donor's system user ID" required />
+            <label className="form-label">Donor Registration ID *</label>
+            <input className="form-input" name="donorRegId" value={form.donorRegId}
+              onChange={handleChange} placeholder="e.g. 49102834" required />
             <p style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", marginTop: 4 }}>
-              Ask the donor for their registered User ID from their profile.
+              Ask the donor for their 8-digit Registration ID from their dashboard.
             </p>
           </div>
 

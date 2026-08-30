@@ -55,6 +55,7 @@ const DonorProfile = () => {
         {/* Read-only info */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "24px" }}>
           {[
+            { label: "Registration ID", value: profile?.userId?.registrationId || "\u2014" },
             { label: "Name",        value: profile?.userId?.name },
             { label: "Email",       value: profile?.userId?.email },
             { label: "Blood Group", value: profile?.bloodGroup },
