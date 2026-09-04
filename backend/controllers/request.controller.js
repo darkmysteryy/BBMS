@@ -37,6 +37,13 @@ const createRequest = async (req, res, next) => {
       status: "Open",
     });
 
+    const populatedRequest = await BloodRequest.findById(request._id).populate("donor", "name phone");
+
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("newBloodRequest", populatedRequest);
+    }
+
     sendSuccess(res, 201, "Blood request posted publicly. Nearby hospitals can now accept it.", request);
   } catch (error) {
     next(error);
@@ -139,7 +146,9 @@ const acceptRequest = async (req, res, next) => {
         acceptedAt: new Date(),
       },
       { new: true }
-    ).populate("donor", "name phone");
+    )
+      .populate("donor", "name phone")
+      .populate("acceptedBy", "hospitalName address contactPerson");
 
     if (!request) {
       // Either doesn't exist OR another hospital already accepted it
@@ -153,6 +162,11 @@ const acceptRequest = async (req, res, next) => {
       const error = new Error("This request has already been accepted by another hospital.");
       error.statusCode = 409;
       throw error;
+    }
+
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("requestAccepted", request);
     }
 
     sendSuccess(res, 200, "Request accepted successfully. Please fulfil it from your inventory.", request);

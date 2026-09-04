@@ -8,18 +8,21 @@ const { sendSuccess } = require("../utils/apiResponse");
 const LOW_STOCK_THRESHOLD = 10;
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
-// ─── Get This Hospital's Inventory ────────────────────────────────────────────
-const getHospitalInventory = async (req, res, next) => {
+// ─── Get Inventory ─────────────────────────────────────────────────────────────
+const getInventory = async (req, res, next) => {
   try {
-    const hospital = await Hospital.findOne({ userId: req.user._id });
-    if (!hospital) {
-      const error = new Error("Hospital profile not found.");
-      error.statusCode = 404;
-      throw error;
+    const filter = {};
+    if (req.user.role === "hospital") {
+      const hospital = await Hospital.findOne({ userId: req.user._id });
+      if (!hospital) {
+        const error = new Error("Hospital profile not found.");
+        error.statusCode = 404;
+        throw error;
+      }
+      filter.hospital = hospital._id;
     }
 
     const { bloodGroup, status } = req.query;
-    const filter = { hospital: hospital._id };
     if (bloodGroup) filter.bloodGroup = bloodGroup;
     if (status) filter.status = status;
 
@@ -70,4 +73,69 @@ const getPublicInventorySummary = async (req, res, next) => {
   }
 };
 
-module.exports = { getHospitalInventory, getPublicInventorySummary };
+// ─── Add Inventory Item (Admin) ───────────────────────────────────────────────
+const addInventoryItem = async (req, res, next) => {
+  try {
+    const { bloodGroup, units, status } = req.body;
+    
+    const collectionDate = new Date();
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + 42);
+
+    const inventoryItem = await Inventory.create({
+      bloodGroup,
+      units,
+      status: status || "available",
+      collectionDate,
+      expiryDate,
+    });
+
+    sendSuccess(res, 201, "Inventory item created.", inventoryItem);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ─── Update Inventory Item (Admin) ────────────────────────────────────────────
+const updateInventoryItem = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { bloodGroup, units, status } = req.body;
+
+    const inventoryItem = await Inventory.findByIdAndUpdate(
+      id,
+      { bloodGroup, units, status },
+      { new: true, runValidators: true }
+    );
+
+    if (!inventoryItem) {
+      const error = new Error("Inventory item not found.");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    sendSuccess(res, 200, "Inventory item updated.", inventoryItem);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ─── Delete Inventory Item (Admin) ────────────────────────────────────────────
+const deleteInventoryItem = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const inventoryItem = await Inventory.findByIdAndDelete(id);
+
+    if (!inventoryItem) {
+      const error = new Error("Inventory item not found.");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    sendSuccess(res, 200, "Inventory item deleted.", null);
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { getInventory, getPublicInventorySummary, addInventoryItem, updateInventoryItem, deleteInventoryItem };

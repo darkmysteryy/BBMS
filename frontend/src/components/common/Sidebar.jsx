@@ -9,6 +9,7 @@ const adminLinks = [
   { to: "/admin/dashboard",  icon: "📊", label: "Dashboard" },
   { to: "/admin/hospitals",  icon: "🏥", label: "Hospitals" },
   { to: "/admin/donors",     icon: "👤", label: "Donors" },
+  { to: "/admin/inventory",  icon: "🩸", label: "Inventory" },
 ];
 
 const donorLinks = [

@@ -85,6 +85,32 @@ const requestSlice = createSlice({
   reducers: {
     clearRequestError: (state) => { state.error = null; },
     clearRequestSuccess: (state) => { state.successMessage = null; },
+    requestAddedRealTime: (state, action) => {
+      const exists = state.openRequests.find(r => r._id === action.payload._id);
+      if (!exists) {
+        state.openRequests.unshift(action.payload);
+      }
+    },
+    requestUpdatedRealTime: (state, action) => {
+      const updatedRequest = action.payload;
+      
+      // Update in donor's myRequests
+      const myIdx = state.myRequests.findIndex(r => r._id === updatedRequest._id);
+      if (myIdx !== -1) {
+        state.myRequests[myIdx] = updatedRequest;
+      }
+      
+      // Remove from openRequests since it's no longer open (if it was accepted)
+      if (updatedRequest.status !== "Open") {
+        state.openRequests = state.openRequests.filter(r => r._id !== updatedRequest._id);
+      } else {
+        // If it's still open (e.g. just a text edit, which isn't currently supported but for safety)
+        const openIdx = state.openRequests.findIndex(r => r._id === updatedRequest._id);
+        if (openIdx !== -1) {
+          state.openRequests[openIdx] = updatedRequest;
+        }
+      }
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -141,5 +167,5 @@ const requestSlice = createSlice({
   },
 });
 
-export const { clearRequestError, clearRequestSuccess } = requestSlice.actions;
+export const { clearRequestError, clearRequestSuccess, requestAddedRealTime, requestUpdatedRealTime } = requestSlice.actions;
 export default requestSlice.reducer;
