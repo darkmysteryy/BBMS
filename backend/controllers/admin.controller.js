@@ -25,13 +25,6 @@ const seedAdmin = async (req, res, next) => {
       throw error;
     }
 
-    const existingAdmin = await User.findOne({ role: ROLES.ADMIN });
-    if (existingAdmin) {
-      const error = new Error("Admin already exists.");
-      error.statusCode = 400;
-      throw error;
-    }
-
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Generate unique Registration ID for admin
